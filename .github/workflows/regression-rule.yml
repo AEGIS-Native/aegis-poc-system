@@ -1,0 +1,19 @@
+# Required check for a README-only public repo (Founder 2197/2198): one job named regression-check.
+# Public repo = free hosted minutes, so ubuntu-latest is allowed here (the self-hosted rule is for the private repos).
+name: regression-rule
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  regression-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No credential-looking text in the change
+        run: |
+          set -u
+          if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|xox[abp]-[A-Za-z0-9-]{10,})' -- . ':!.github'; then
+            echo "REGRESSION fail credential-looking text"; exit 1
+          fi
+          echo "REGRESSION pass"
